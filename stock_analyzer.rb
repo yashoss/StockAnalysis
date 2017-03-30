@@ -28,7 +28,6 @@ end
 # Read tickers from csv file
 symbols = CSV.read("./stocks_flag.csv")
 symbols = symbols.flatten.map {|s| s.downcase}
-symbols = ["aapl"]
 soi = []
 symbols.each do |sym|
 
