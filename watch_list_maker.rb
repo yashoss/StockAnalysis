@@ -7,14 +7,14 @@ require 'algorithms'
 class SOI
   def initialize(symbol, oc, op, hc, hp, lc, lp, cc, cp)
     @symbol = symbol
-    @open_c = oc
-    @open_p = op
-    @high_c = hc
-    @high_p = hp
-    @low_c = lc
-    @low_p = lp
-    @close_c = cc
-    @close_p = cp
+    @open_c = oc.round(2)
+    @open_p = op.round(2)
+    @high_c = hc.round(2)
+    @high_p = hp.round(2)
+    @low_c = lc.round(2)
+    @low_p = lp.round(2)
+    @close_c = cc.round(2)
+    @close_p = cp.round(2)
   end
 
   def printStock
@@ -25,11 +25,15 @@ class SOI
     print "  Close Difference: #{@close_c} (#{@close_p}%)\n"
   end
 end
+CSV.open("./increase.csv", "wb") do |csv|
+  csv << ["Ticker", "Close change", "Close % change"]
+end
 # Read tickers from csv file
-symbols = CSV.read("./stocks_flag.csv")
-symbols = symbols.flatten.map {|s| s.downcase}
+# symbols = CSV.read("./stocks_flag.csv")
+# symbols = symbols.flatten.map {|s| s.downcase}
 soi = []
-symbols.each do |sym|
+# symbols.each do |sym|
+sym = "aapl"
 
   # Grab url
   html = HTTParty.get("http://www.nasdaq.com/symbol/#{sym}/historical")
@@ -45,8 +49,8 @@ symbols.each do |sym|
   # Go through rows and find the lowest value
   # and highest value to determine percent increase
   p "analyzing #{sym}"
-  row1 = rows[1]
-  row2 = rows[4]
+  row1 = rows[2]
+  row2 = rows[5]
   oc1 = row1.at_xpath("td[2]/text()").to_s.strip.to_f
   oc2 = row2.at_xpath("td[2]/text()").to_s.strip.to_f
   oc = oc1 - oc2
@@ -65,7 +69,10 @@ symbols.each do |sym|
   cp = cc / cc2 * 100
   stock = SOI.new(sym, oc, op, hc, hp, lc, lp, cc, cp)
   soi.push(stock)
-end
+  CSV.open("./increase.csv", "ab") do |csv|
+    csv << [sym, cc.round(2), cp.round(2)]
+  end
+# end
 soi.each do |s|
   s.printStock
 end
